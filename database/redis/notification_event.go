@@ -21,6 +21,10 @@ func (connector *DbConnector) GetNotificationEvents(triggerID string, start int6
 
 	eventsData, err := reply.Events(c.Do("ZREVRANGE", triggerEventsKey(triggerID), start, start+size))
 
+	for _, event := range eventsData { //TODO(litleleprikon): remove in moira v2.8.0. Compatibility with moira < v2.6.0
+		notificationEventDidUnmarshal(event)
+	}
+
 	if err != nil {
 		if err == redis.ErrNil {
 			return make([]*moira.NotificationEvent, 0), nil
@@ -34,6 +38,7 @@ func (connector *DbConnector) GetNotificationEvents(triggerID string, start int6
 // PushNotificationEvent adds new NotificationEvent to events list and to given triggerID events list and deletes events who are older than 30 days
 // If ui=true, then add to ui events list
 func (connector *DbConnector) PushNotificationEvent(event *moira.NotificationEvent, ui bool) error {
+	notificationEventWillMarshal(event) //TODO(litleleprikon): remove in moira v2.8.0. Compatibility with moira < v2.6.0
 	eventBytes, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -91,6 +96,13 @@ func (connector *DbConnector) FetchNotificationEvent() (moira.NotificationEvent,
 	}
 	if err := json.Unmarshal(eventBytes, &event); err != nil {
 		return event, fmt.Errorf("failed to parse event json %s: %s", eventBytes, err.Error())
+	}
+	if event.Values == nil { //TODO(litleleprikon): remove in moira v2.8.0. Compatibility with moira < v2.6.0
+		event.Values = make(map[string]float64)
+	}
+	if event.Value != nil {
+		event.Values["t1"] = *event.Value
+		event.Value = nil
 	}
 	return event, nil
 }

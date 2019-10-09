@@ -15,12 +15,18 @@ import (
 func (connector *DbConnector) GetTriggerLastCheck(triggerID string) (moira.CheckData, error) {
 	c := connector.pool.Get()
 	defer c.Close()
-	return reply.Check(c.Do("GET", metricLastCheckKey(triggerID)))
+	lastCheck, err := reply.Check(c.Do("GET", metricLastCheckKey(triggerID)))
+	if err != nil {
+		return lastCheck, err
+	}
+	checkDataDidUnmarshal(&lastCheck) //TODO(litleleprikon): remove in moira v2.8.0. Compatibility with moira < v2.6.0
+	return lastCheck, nil
 }
 
 // SetTriggerLastCheck sets trigger last check data
 func (connector *DbConnector) SetTriggerLastCheck(triggerID string, checkData *moira.CheckData, isRemote bool) error {
 	selfStateCheckCountKey := connector.getSelfStateCheckCountKey(isRemote)
+	checkDataWillMarshal(checkData) //TODO(litleleprikon): remove in moira v2.8.0. Compatibility with moira < v2.6.0
 	bytes, err := json.Marshal(checkData)
 	if err != nil {
 		return err

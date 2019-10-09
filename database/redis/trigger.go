@@ -282,6 +282,7 @@ func (connector *DbConnector) GetTriggerChecks(triggerIDs []string) ([]*moira.Tr
 			return nil, err
 		}
 		lastCheck, err := reply.Check(slice[3], nil)
+		checkDataDidUnmarshal(&lastCheck) //TODO(litleleprikon): remove in moira v2.8.0. Compatibility with moira < v2.6.0
 		if err != nil && err != database.ErrNil {
 			return nil, err
 		}
@@ -300,6 +301,7 @@ func (connector *DbConnector) GetTriggerChecks(triggerIDs []string) ([]*moira.Tr
 
 func (connector *DbConnector) getTriggerWithTags(triggerRaw interface{}, tagsRaw interface{}, triggerID string) (moira.Trigger, error) {
 	trigger, err := reply.Trigger(triggerRaw, nil)
+	triggerDidUnmarshal(&trigger) //TODO(litleleprikon): remove in moira v2.8.0. Compatibility with moira < v2.6.0
 	if err != nil {
 		return trigger, err
 	}
