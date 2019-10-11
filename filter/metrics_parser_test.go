@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"strconv"
 	"testing"
+	"time"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -74,6 +75,80 @@ func TestParseMetric(t *testing.T) {
 			So(parsedMetric.Value, ShouldEqual, validMetric.value)
 			So(parsedMetric.Timestamp, ShouldEqual, validMetric.timestamp)
 		}
+
+		Convey("Check metrics with magic '-1' timestamp", func() {
+			timeStart := time.Now().Unix()
+			magicTimestampMetrics := []ValidMetricCase{
+				{
+					input:     "One.two.three 123 -1",
+					metric:    "One.two.three",
+					name:      "Metric with integer value and magic -1 as time value",
+					labels:    map[string]string{},
+					value:     123,
+					timestamp: timeStart,
+				},
+				{
+					input:     "One.two.three 1.23e2 -1",
+					metric:    "One.two.three",
+					name:      "Metric with float value and magic -1 as time value",
+					labels:    map[string]string{},
+					value:     123,
+					timestamp: timeStart,
+				},
+				{
+					input:     "One.two.three -123 -1",
+					metric:    "One.two.three",
+					name:      "Metric with negative integer value and magic -1 as time value",
+					labels:    map[string]string{},
+					value:     -123,
+					timestamp: timeStart,
+				},
+				{
+					input:     "One.two.three +123 -1",
+					metric:    "One.two.three",
+					name:      "Metric with positive integer value and magic -1 as time value",
+					labels:    map[string]string{},
+					value:     123,
+					timestamp: timeStart,
+				},
+				{
+					input:     "One.two.three 123. -1",
+					metric:    "One.two.three",
+					name:      "Metric with integer with point value and magic -1 as time value",
+					labels:    map[string]string{},
+					value:     123,
+					timestamp: timeStart,
+				},
+				{
+					input:     "One.two.three 123.0 -1",
+					metric:    "One.two.three",
+					name:      "Metric with integer with 0 value and magic -1 as time value",
+					labels:    map[string]string{},
+					value:     123,
+					timestamp: timeStart,
+				},
+				{
+					input:     "One.two.three .123 -1",
+					metric:    "One.two.three",
+					name:      "Metric with float without 0 value and magic -1 as time value",
+					labels:    map[string]string{},
+					value:     0.123,
+					timestamp: timeStart,
+				},
+			}
+
+			for _, magicMetric := range magicTimestampMetrics {
+				Convey(magicMetric.name, func() {
+					parsedMetric, err := ParseMetric([]byte(magicMetric.input))
+					So(err, ShouldBeEmpty)
+					So(parsedMetric.Metric, ShouldEqual, magicMetric.metric)
+					So(parsedMetric.Labels, ShouldResemble, magicMetric.labels)
+					So(parsedMetric.Value, ShouldEqual, magicMetric.value)
+					// I add 5 seconds to avoid false failures
+					So(parsedMetric.Timestamp, ShouldBeBetweenOrEqual, magicMetric.timestamp, magicMetric.timestamp+5)
+				})
+			}
+		})
 	})
 
 	Convey("Given valid metric strings with float64 timestamp, should return parsed values", t, func() {
