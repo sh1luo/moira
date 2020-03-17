@@ -5,7 +5,6 @@ import (
 	"math"
 
 	"github.com/gofrs/uuid"
-
 	"github.com/moira-alert/moira"
 	"github.com/moira-alert/moira/api"
 	"github.com/moira-alert/moira/api/dto"
@@ -60,7 +59,7 @@ func GetAllTriggers(database moira.Database) (*dto.TriggersList, *api.ErrorRespo
 }
 
 // SearchTriggers gets trigger page and filter trigger by tags and search request terms
-func SearchTriggers(database moira.Database, searcher moira.Searcher, page int64, size int64, onlyErrors bool, filterTags []string, searchString string, createPager bool, pagerID string) (*dto.TriggersList, *api.ErrorResponse) {
+func SearchTriggers(logger moira.Logger, database moira.Database, searcher moira.Searcher, page int64, size int64, onlyErrors bool, filterTags []string, searchString string, createPager bool, pagerID string) (*dto.TriggersList, *api.ErrorResponse) {
 	var searchResults []*moira.SearchResult
 	var total int64
 	pagerShouldExist := pagerID != ""
@@ -83,7 +82,9 @@ func SearchTriggers(database moira.Database, searcher moira.Searcher, page int64
 		if createPager {
 			passSize = pageSizeUnlimited
 		}
+		logger.Infof("OLDSCHOOL BEGIN searcher.SearchTriggers(), size %d", size)
 		searchResults, total, err = searcher.SearchTriggers(filterTags, searchString, onlyErrors, page, passSize)
+		logger.Infof("OLDSCHOOL END searcher.SearchTriggers(), size %d", size)
 		if err != nil {
 			return nil, api.ErrorInternalServer(err)
 		}
@@ -95,7 +96,9 @@ func SearchTriggers(database moira.Database, searcher moira.Searcher, page int64
 			return nil, api.ErrorInternalServer(err)
 		}
 		pagerID = uuid4.String()
+		logger.Infof("OLDSCHOOL BEGIN database.SaveTriggersSearchResults(), size %d", size)
 		database.SaveTriggersSearchResults(pagerID, searchResults)
+		logger.Infof("OLDSCHOOL END database.SaveTriggersSearchResults(), size %d", size)
 	}
 
 	if createPager {

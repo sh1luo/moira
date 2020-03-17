@@ -88,7 +88,7 @@ func searchTriggers(writer http.ResponseWriter, request *http.Request) {
 	createPager := middleware.GetCreatePager(request)
 	pagerID := middleware.GetPagerID(request)
 
-	triggersList, errorResponse := controller.SearchTriggers(database, searchIndex, page, size, onlyErrors, filterTags, searchString, createPager, pagerID)
+	triggersList, errorResponse := controller.SearchTriggers(middleware.GetLoggerEntry(request), database, searchIndex, page, size, onlyErrors, filterTags, searchString, createPager, pagerID)
 	if errorResponse != nil {
 		render.Render(writer, request, errorResponse)
 		return
