@@ -58,7 +58,7 @@ func MakeTriggerChecker(triggerID string, dataBase moira.Database, logger moira.
 		metrics:  metrics.GetCheckMetrics(&trigger),
 		source:   source,
 
-		from:  calculateFrom(lastCheck.Timestamp, trigger.TTL),
+		from:  lastCheck.Timestamp,
 		until: until,
 
 		triggerID: triggerID,
@@ -97,11 +97,4 @@ func getTTLState(triggerTTLState *moira.TTLState) moira.TTLState {
 		return *triggerTTLState
 	}
 	return moira.TTLStateNODATA
-}
-
-func calculateFrom(lastCheckTimestamp, triggerTTL int64) int64 {
-	if triggerTTL != 0 {
-		return lastCheckTimestamp - triggerTTL
-	}
-	return lastCheckTimestamp - 600
 }

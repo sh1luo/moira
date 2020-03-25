@@ -113,7 +113,7 @@ func TestInitTriggerChecker(t *testing.T) {
 			ttl:       trigger.TTL,
 			ttlState:  *trigger.TTLState,
 			lastCheck: &lastCheck,
-			from:      lastCheck.Timestamp - ttl,
+			from:      lastCheck.Timestamp,
 			until:     actual.until,
 		}
 		So(*actual, ShouldResemble, expected)
@@ -139,7 +139,7 @@ func TestInitTriggerChecker(t *testing.T) {
 				State:     moira.StateOK,
 				Timestamp: actual.until - 3600,
 			},
-			from:  actual.until - 3600 - ttl,
+			from:  actual.until - 3600,
 			until: actual.until,
 		}
 		So(*actual, ShouldResemble, expected)
@@ -168,7 +168,7 @@ func TestInitTriggerChecker(t *testing.T) {
 				State:     moira.StateOK,
 				Timestamp: actual.until - 3600,
 			},
-			from:  actual.until - 3600 - 600,
+			from:  actual.until - 3600,
 			until: actual.until,
 		}
 		So(*actual, ShouldResemble, expected)
@@ -190,7 +190,7 @@ func TestInitTriggerChecker(t *testing.T) {
 			ttl:       0,
 			ttlState:  moira.TTLStateNODATA,
 			lastCheck: &lastCheck,
-			from:      lastCheck.Timestamp - 600,
+			from:      lastCheck.Timestamp,
 			until:     actual.until,
 		}
 		So(*actual, ShouldResemble, expected)
